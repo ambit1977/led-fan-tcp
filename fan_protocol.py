@@ -91,6 +91,11 @@ def exchange(
             if not block:
                 break
             received.append(block)
+            # The controller can send unrelated index updates while its mobile
+            # app holds another TCP session. A request has one C0 frame; stop
+            # at its terminator instead of concatenating later broadcasts.
+            if b"".join(received).endswith(FRAME_END):
+                break
     return b"".join(received)
 
 
