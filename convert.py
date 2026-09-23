@@ -71,10 +71,12 @@ def _ffmpeg_command(source: Path, *, fps: int) -> list[str]:
     ffmpeg = shutil.which("ffmpeg")
     if not ffmpeg:
         raise RuntimeError("ffmpeg was not found; install FFmpeg and retry")
-    # Keep the source aspect ratio; letterbox rather than crop away user content.
+    # Scale from the short side until the source covers the whole square, then
+    # crop the excess equally from the long side. This keeps a centred subject
+    # and avoids letterbox bands on the circular display.
     vf = (
-        f"fps={fps},scale={SOURCE_SIZE}:{SOURCE_SIZE}:force_original_aspect_ratio=decrease,"
-        f"pad={SOURCE_SIZE}:{SOURCE_SIZE}:(ow-iw)/2:(oh-ih)/2:black"
+        f"fps={fps},scale={SOURCE_SIZE}:{SOURCE_SIZE}:force_original_aspect_ratio=increase,"
+        f"crop={SOURCE_SIZE}:{SOURCE_SIZE}:(iw-ow)/2:(ih-oh)/2"
     )
     return [ffmpeg, "-v", "error", "-i", str(source), "-an", "-vf", vf,
             "-pix_fmt", "rgb24", "-f", "rawvideo", "-"]

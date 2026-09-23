@@ -28,7 +28,7 @@ command below, while delete and format commands remain unavailable.
 
 `upload` implements the observed V13 BIN streaming sequence and validates the
 existing `.BIN` trailer. `convert` uses the locally installed `ffmpeg` to
-letterbox video into a 256px square, maps it to the observed 224x128 polar
+scale from the short side and centre-crop a 256px square, maps it to the observed 224x128 polar
 raster, and writes RGB as three one-bit device frames. `convert-upload` does
 the same then uploads the generated BIN. Existing remote names are rejected by
 default; use `--replace` only when replacement is intentional.
