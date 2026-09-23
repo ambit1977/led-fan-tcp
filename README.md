@@ -20,6 +20,16 @@ controller's `\0hfi` SD-card index. `raw <hex-payload>` is deliberately
 low-level protocol-research support: upload, delete, and play commands are not
 exposed until their packet formats are confirmed.
 
+## Multiple clients
+
+Two simultaneous TCP discovery requests from the same host both returned valid
+`hfi` replies from the controller. Read-only index requests can therefore
+coexist. The vendor applications also contain an `otherdevicesending` error,
+which indicates that file transfer is single-writer. Treat playback and setting
+changes as shared device state: the protocol has no observed client ownership
+or authentication, so do not issue competing control commands from multiple
+clients.
+
 Run the offline parser tests with:
 
 ```sh
