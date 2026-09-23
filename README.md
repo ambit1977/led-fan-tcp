@@ -7,7 +7,9 @@ While connected to the fan's Wi-Fi access point, query the SD-card index:
 ```sh
 python3 fanctl.py list
 python3 fanctl.py power
-python3 fanctl.py upload /path/to/video.BIN
+python3 fanctl.py upload /path/to/already-converted.BIN
+python3 fanctl.py convert /path/to/movie.mp4 --output /path/to/MOVIE.BIN
+python3 fanctl.py convert-upload /path/to/movie.mp4 --output /path/to/MOVIE.BIN
 ```
 
 The verified controller endpoint is `192.168.4.1:20320`; override it with
@@ -25,9 +27,17 @@ protocol-research support; file upload is exposed through the safer `upload`
 command below, while delete and format commands remain unavailable.
 
 `upload` implements the observed V13 BIN streaming sequence and validates the
-existing `.BIN` trailer. Video-to-BIN LED rasterization is model-specific and
-is kept separate until its format is fully decoded. Existing remote names are
-rejected by default; use `--replace` only when replacement is intentional.
+existing `.BIN` trailer. `convert` uses the locally installed `ffmpeg` to
+letterbox video into a 256px square, maps it to the observed 224x128 polar
+raster, and writes RGB as three one-bit device frames. `convert-upload` does
+the same then uploads the generated BIN. Existing remote names are rejected by
+default; use `--replace` only when replacement is intentional.
+
+The encoder is based on the vendor's 224-angle, 128-radius frame structure and
+has offline packing tests. Orientation is installation-specific: use
+`--clockwise` and `--angle-offset` after a short physical test clip, rather
+than uploading a long unverified video. The vendor manual limits a video to 15
+minutes; the converter enforces that limit.
 The transport has been verified against a 42ue sample: `01KADO.BIN`
 (12,386,356 bytes) appeared as `01KADO` in the controller's SD-card index.
 
