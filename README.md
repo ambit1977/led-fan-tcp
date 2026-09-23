@@ -20,9 +20,9 @@ C0EEB7C9BAA3 + payload + C0EEBDF9E5B7
 `list` sends the empty vendor discovery frame and is read-only. It returns the
 controller's `i` SD-card index. `power` first performs that mandatory
 per-connection discovery handshake, then sends the vendor application's
-power-toggle command. `raw <hex-payload>` is deliberately
-low-level protocol-research support: upload, delete, and play commands are not
-exposed until their packet formats are confirmed.
+power-toggle command. `raw <hex-payload>` remains deliberately low-level
+protocol-research support; file upload is exposed through the safer `upload`
+command below, while delete and format commands remain unavailable.
 
 `upload` implements the observed V13 BIN streaming sequence and validates the
 existing `.BIN` trailer. Video-to-BIN LED rasterization is model-specific and
