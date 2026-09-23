@@ -10,6 +10,7 @@ python3 fanctl.py power
 python3 fanctl.py upload /path/to/already-converted.BIN
 python3 fanctl.py convert /path/to/movie.mp4 --output /path/to/MOVIE.BIN
 python3 fanctl.py convert-upload /path/to/movie.mp4 --output /path/to/MOVIE.BIN
+python3 fanctl.py preview /path/to/MOVIE.BIN --output /path/to/MOVIE-preview.mp4
 ```
 
 The verified controller endpoint is `192.168.4.1:20320`; override it with
@@ -38,6 +39,10 @@ has offline packing tests. Orientation is installation-specific: use
 `--clockwise` and `--angle-offset` after a short physical test clip, rather
 than uploading a long unverified video. The vendor manual limits a video to 15
 minutes; the converter enforces that limit.
+
+`preview` reverses those 42ue RGB bit planes into a normal 256px H.264 MP4 for
+macOS playback. It is a decoding preview, not a measurement of the physical
+fan's persistence-of-vision output.
 The transport has been verified against a 42ue sample: `01KADO.BIN`
 (12,386,356 bytes) appeared as `01KADO` in the controller's SD-card index.
 

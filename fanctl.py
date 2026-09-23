@@ -8,12 +8,13 @@ from pathlib import Path
 
 from convert import convert_video
 from fan_protocol import DEFAULT_HOST, DEFAULT_PORT, exchange_command, request_file_index, toggle_power
+from preview import render_bin
 from upload import upload_bin
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("list", "power", "upload", "convert", "convert-upload", "raw"))
+    parser.add_argument("command", choices=("list", "power", "upload", "convert", "convert-upload", "preview", "raw"))
     parser.add_argument("payload", nargs="?", help="path for upload/convert, or hexadecimal payload for raw")
     parser.add_argument("--host", default=DEFAULT_HOST)
     parser.add_argument("--port", type=int, default=DEFAULT_PORT)
@@ -22,6 +23,7 @@ def main() -> None:
     parser.add_argument("--threshold", type=int, default=128, help="RGB threshold, 0..255 (default: 128)")
     parser.add_argument("--clockwise", action="store_true", help="reverse polar direction for a clockwise installation")
     parser.add_argument("--angle-offset", type=int, default=0, help="polar rotation in 224 angular steps")
+    parser.add_argument("--fps", type=int, default=30, help="video frame rate for conversion or preview (default: 30)")
     args = parser.parse_args()
 
     if args.command == "list":
@@ -37,13 +39,23 @@ def main() -> None:
         print("power toggle sent (the controller does not acknowledge this command)")
         return
 
+    if args.command == "preview":
+        if not args.payload:
+            parser.error("preview requires a local .BIN path")
+        local_path = Path(args.payload)
+        output = args.output or local_path.with_suffix(".mp4")
+        frames = render_bin(local_path, output, fps=args.fps,
+                            clockwise=args.clockwise, angle_offset=args.angle_offset)
+        print(f"rendered={frames} RGB frames -> {output}")
+        return
+
     if args.command in {"upload", "convert", "convert-upload"}:
         if not args.payload:
             parser.error(f"{args.command} requires a local path")
         local_path = Path(args.payload)
         if args.command in {"convert", "convert-upload"}:
             output = args.output or local_path.with_suffix(".BIN")
-            frames = convert_video(local_path, output, threshold=args.threshold,
+            frames = convert_video(local_path, output, fps=args.fps, threshold=args.threshold,
                                    clockwise=args.clockwise, angle_offset=args.angle_offset)
             print(f"converted={frames} RGB frames ({frames * 3} device frames) -> {output}")
             if args.command == "convert":

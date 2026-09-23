@@ -2,6 +2,7 @@ import unittest
 
 from bin_format import FRAME_UNIT
 from convert import SOURCE_SIZE, pack_rgb_frame
+from preview import render_rgb_frame
 
 
 class ConvertTests(unittest.TestCase):
@@ -23,6 +24,16 @@ class ConvertTests(unittest.TestCase):
         # affect the red plane only.
         self.assertNotEqual(encoded[:FRAME_UNIT], bytes(FRAME_UNIT))
         self.assertEqual(encoded[FRAME_UNIT:], bytes(FRAME_UNIT * 2))
+
+    def test_packed_frame_renders_back_to_red_preview(self):
+        source = bytearray(SOURCE_SIZE * SOURCE_SIZE * 3)
+        center = round((SOURCE_SIZE - 1) / 2)
+        source[(center * SOURCE_SIZE + center) * 3] = 255
+        preview = render_rgb_frame(pack_rgb_frame(bytes(source)))
+        red_values = preview[0::3]
+        self.assertGreater(sum(red_values), 0)
+        self.assertEqual(preview[1::3], bytes(SOURCE_SIZE * SOURCE_SIZE))
+        self.assertEqual(preview[2::3], bytes(SOURCE_SIZE * SOURCE_SIZE))
 
 
 if __name__ == "__main__":
