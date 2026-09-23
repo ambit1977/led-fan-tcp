@@ -3,6 +3,7 @@ import unittest
 from pathlib import Path
 
 from bin_format import BIN_TRAILER, FRAME_UNIT, inspect_bin
+from upload import UPLOAD_FRAME_START, encode_upload_name
 
 
 class BinFormatTests(unittest.TestCase):
@@ -20,3 +21,7 @@ class BinFormatTests(unittest.TestCase):
             path.write_bytes(b"not a bin")
             with self.assertRaises(ValueError):
                 inspect_bin(path)
+
+    def test_upload_filename_header_uses_observed_radix(self):
+        self.assertEqual(encode_upload_name("01KADO.BIN"), b"\x00md01KADO.BIN")
+        self.assertEqual(UPLOAD_FRAME_START, b"B2DDDDED")

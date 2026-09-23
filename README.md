@@ -28,6 +28,8 @@ command below, while delete and format commands remain unavailable.
 existing `.BIN` trailer. Video-to-BIN LED rasterization is model-specific and
 is kept separate until its format is fully decoded. Existing remote names are
 rejected by default; use `--replace` only when replacement is intentional.
+The transport has been verified against a 42ue sample: `01KADO.BIN`
+(12,386,356 bytes) appeared as `01KADO` in the controller's SD-card index.
 
 ## Multiple clients
 

@@ -6,9 +6,20 @@ import socket
 from pathlib import Path
 
 from bin_format import inspect_bin, iter_chunks
-from fan_protocol import DEFAULT_HOST, DEFAULT_PORT, FRAME_END, FRAME_START, _receive_one_frame, encode_command_payload
+from fan_protocol import DEFAULT_HOST, DEFAULT_PORT, FRAME_END, _receive_one_frame
 
 UPLOAD_SESSION_MARKER = b"B2DDDDEDC0EEBDF9E5B7"
+UPLOAD_FRAME_START = b"B2DDDDED"
+
+
+def encode_upload_name(name: str) -> bytes:
+    """Encode a filename with V13's upload-specific 15-byte length radix."""
+    payload = name.encode("ascii")
+    length = len(payload)
+    high, remainder = divmod(length, 15)
+    if high > 0xFF:
+        raise ValueError("remote filename is too long")
+    return bytes((high, ord("j") + remainder // 3, ord("c") + remainder % 3)) + payload
 
 
 def upload_bin(path: Path, host: str = DEFAULT_HOST, port: int = DEFAULT_PORT, *, remote_name: str | None = None, replace: bool = False) -> int:
@@ -25,7 +36,7 @@ def upload_bin(path: Path, host: str = DEFAULT_HOST, port: int = DEFAULT_PORT, *
     with socket.create_connection((host, port), timeout=10) as connection:
         connection.settimeout(10)
         connection.sendall(UPLOAD_SESSION_MARKER)
-        connection.sendall(FRAME_START + encode_command_payload(name.encode("ascii")) + FRAME_END)
+        connection.sendall(UPLOAD_FRAME_START + encode_upload_name(name) + FRAME_END)
         _receive_one_frame(connection)
         sent = 0
         for block in iter_chunks(path):
