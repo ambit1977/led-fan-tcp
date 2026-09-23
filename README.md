@@ -6,6 +6,8 @@ While connected to the fan's Wi-Fi access point, query the SD-card index:
 
 ```sh
 python3 fanctl.py list
+python3 fanctl.py power
+python3 fanctl.py upload /path/to/video.BIN
 ```
 
 The verified controller endpoint is `192.168.4.1:20320`; override it with
@@ -16,9 +18,16 @@ C0EEB7C9BAA3 + payload + C0EEBDF9E5B7
 ```
 
 `list` sends the empty vendor discovery frame and is read-only. It returns the
-controller's `\0hfi` SD-card index. `raw <hex-payload>` is deliberately
+controller's `i` SD-card index. `power` first performs that mandatory
+per-connection discovery handshake, then sends the vendor application's
+power-toggle command. `raw <hex-payload>` is deliberately
 low-level protocol-research support: upload, delete, and play commands are not
 exposed until their packet formats are confirmed.
+
+`upload` implements the observed V13 BIN streaming sequence and validates the
+existing `.BIN` trailer. Video-to-BIN LED rasterization is model-specific and
+is kept separate until its format is fully decoded. Existing remote names are
+rejected by default; use `--replace` only when replacement is intentional.
 
 ## Multiple clients
 

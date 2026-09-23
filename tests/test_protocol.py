@@ -1,6 +1,13 @@
 import unittest
 
-from fan_protocol import Frame, decode_frame, parse_file_index
+from fan_protocol import (
+    POWER_TOGGLE,
+    Frame,
+    decode_command_payload,
+    decode_frame,
+    encode_command_payload,
+    parse_file_index,
+)
 
 
 DEVICE_INDEX_RESPONSE = bytes.fromhex(
@@ -15,8 +22,11 @@ class ProtocolTests(unittest.TestCase):
     def test_frame_round_trip(self):
         self.assertEqual(decode_frame(Frame(b"abc").encode()).payload, b"abc")
 
+    def test_one_byte_command_header(self):
+        self.assertEqual(encode_command_payload(POWER_TOGGLE), b"\x00cca")
+
     def test_known_device_index(self):
-        result = parse_file_index(decode_frame(DEVICE_INDEX_RESPONSE))
+        result = parse_file_index(decode_command_payload(decode_frame(DEVICE_INDEX_RESPONSE)))
         self.assertEqual(result, [
             "1", "AKI", "AKI2", "HAKO012", "HAKO1", "HAKO12", "HAKO2",
             "HAKO22", "HAKO3", "TATE2", "TATE4", "TATEYAMA",
